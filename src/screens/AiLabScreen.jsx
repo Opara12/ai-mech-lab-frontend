@@ -1,18 +1,38 @@
 import React, { useState } from 'react';
 import { useMechLab } from '../context/MechLabContext';
 import ConceptExplorer from '../components/shared/ConceptExplorer';
+import {
+  AI_EXPLORER_TOPICS,
+  MECHATRONICS_EXPLORER_TOPICS
+} from '../data/conceptExplorerCatalog';
 
-const LAB_BENCHES = [
-  { id: 'robotics-pid', label: '🎛️ PID Controller' },
-  { id: 'mechatronics-m1-t1.1', label: '⚡ Ohm’s Law' },
-  { id: 'mechatronics-m1-t1.2', label: '🔌 Series / Parallel' },
-  { id: 'mechatronics-m1-t1.3', label: '💡 LED & Multimeter' },
-  { id: 'mechatronics-m2-t2.1', label: '📡 ADC & Ultrasonic' },
-  { id: 'mechatronics-m3-t3.1', label: '⚙️ PWM & Actuators' },
-  { id: 'ai-m2-t2.1', label: '🔢 NumPy Vectors' },
-  { id: 'ai-m3-t3.1', label: '📐 Dot Product' },
-  { id: 'ai-m4-t4.2', label: '📈 ML Fitter' }
+// Two clear learning areas, each backed by the 11 uploaded course PDFs.
+const LEARNING_AREAS = {
+  ai: {
+    courseKey: 'ai',
+    icon: '🧠',
+    label: 'AI Concept Explorer',
+    blurb: 'Learn AI ideas by predicting, experimenting, and checking your understanding.',
+    topics: AI_EXPLORER_TOPICS
+  },
+  mechatronics: {
+    courseKey: 'mechatronics',
+    icon: '⚙️',
+    label: 'Mechatronics Concept Explorer',
+    blurb: 'Try circuits, sensors, and motors in a safe virtual model before touching real hardware.',
+    topics: MECHATRONICS_EXPLORER_TOPICS
+  }
+};
+
+// Experiment tiles whose underlying content is not yet backed by course PDFs.
+// They remain in code (ExperimentScreen is preserved) but are hidden from the demo.
+const EXPERIMENT_TILES = [
+  { title: 'Hand-sign model', subtitle: 'Train a small classifier', icon: '🧠', demoReady: false },
+  { title: 'Object detector', subtitle: 'Run vision on a camera', icon: '👁️', demoReady: false }
 ];
+
+const areaForTopic = (topicId) =>
+  typeof topicId === 'string' && topicId.startsWith('ai-') ? 'ai' : 'mechatronics';
 
 export default function AiLabScreen({ active }) {
   const {
@@ -20,9 +40,31 @@ export default function AiLabScreen({ active }) {
     setExperimentMeta,
     activeLabBench,
     setActiveLabBench,
-    openBotWithPrompt
+    openBotWithPrompt,
+    openLesson,
+    tracks,
+    awardXp,
+    showToast
   } = useMechLab();
   const [sensorVal, setSensorVal] = useState(50);
+
+  const areaKey = areaForTopic(activeLabBench);
+  const area = LEARNING_AREAS[areaKey];
+  const isKnownTopic = area.topics.some((t) => t.topicId === activeLabBench);
+  const currentTopicId = isKnownTopic ? activeLabBench : area.topics[0].topicId;
+  const currentTopic = area.topics.find((t) => t.topicId === currentTopicId);
+
+  const switchArea = (key) => {
+    if (key === areaKey && isKnownTopic) return;
+    setActiveLabBench(LEARNING_AREAS[key].topics[0].topicId);
+  };
+
+  const openFullLesson = () => {
+    const courseKey = area.courseKey;
+    const slug = currentTopicId.slice(courseKey.length + 1);
+    const idx = tracks?.[courseKey]?.topicSlugs?.indexOf(slug);
+    openLesson(courseKey, typeof idx === 'number' && idx >= 0 ? idx : 0);
+  };
 
   const statusText =
     sensorVal < 35
@@ -111,70 +153,78 @@ export default function AiLabScreen({ active }) {
           <br />
           Build real machines
         </a>
-        <a
-          className="tile"
-          href="#experiment"
-          onClick={(e) =>
-            handleOpenExperiment(
-              e,
-              'Hand-sign model',
-              'Train a small classifier'
-            )
-          }
-        >
-          <i>🧠</i>
-          <b>Hand-sign model</b>
-          <br />
-          Train a small classifier
-        </a>
-        <a
-          className="tile"
-          href="#experiment"
-          onClick={(e) =>
-            handleOpenExperiment(
-              e,
-              'Object detector',
-              'Run vision on a camera'
-            )
-          }
-        >
-          <i>👁️</i>
-          <b>Object detector</b>
-          <br />
-          Run vision on a camera
-        </a>
+        {EXPERIMENT_TILES.filter((tile) => tile.demoReady).map((tile) => (
+          <a
+            key={tile.title}
+            className="tile"
+            href="#experiment"
+            onClick={(e) => handleOpenExperiment(e, tile.title, tile.subtitle)}
+          >
+            <i>{tile.icon}</i>
+            <b>{tile.title}</b>
+            <br />
+            {tile.subtitle}
+          </a>
+        ))}
       </div>
 
-      {/* Phase 2: Interactive Concept Explorers Workbench */}
+      {/* Interactive Concept Explorer: two clear learning areas backed by course PDFs */}
       <div className="card" style={{ marginBottom: '12px' }}>
         <span className="tag" style={{ marginTop: 0 }}>
-          🧪 Interactive Simulation Benches
+          🧪 Interactive Concept Explorer
         </span>
         <h2 style={{ fontSize: '1.05rem', marginTop: '4px' }}>
-          Explore AI, Circuits, Sensors &amp; Control Systems
+          Choose a learning area
         </h2>
-        <p className="meta" style={{ marginBottom: '8px' }}>
-          Select a simulation bench below to test equations and hardware parameters live:
-        </p>
-        <div className="chips" style={{ marginBottom: 0 }}>
-          {LAB_BENCHES.map((bench) => (
+        <div className="chips" role="tablist" aria-label="Learning areas" style={{ marginBottom: '10px' }}>
+          {Object.entries(LEARNING_AREAS).map(([key, a]) => (
             <button
-              key={bench.id}
+              key={key}
               type="button"
+              role="tab"
               className="chip"
-              aria-pressed={activeLabBench === bench.id ? 'true' : 'false'}
-              onClick={() => setActiveLabBench(bench.id)}
+              aria-selected={areaKey === key ? 'true' : 'false'}
+              aria-pressed={areaKey === key ? 'true' : 'false'}
+              onClick={() => switchArea(key)}
             >
-              {bench.label}
+              {a.icon} {a.label} ({a.topics.length} topics)
             </button>
           ))}
         </div>
+        <p className="meta" style={{ marginBottom: '8px' }}>
+          {area.blurb} Pick a topic:
+        </p>
+        <div className="chips" aria-label={`${area.label} topics`} style={{ marginBottom: '10px' }}>
+          {area.topics.map((t) => (
+            <button
+              key={t.topicId}
+              type="button"
+              className="chip"
+              title={t.title}
+              aria-pressed={currentTopicId === t.topicId ? 'true' : 'false'}
+              onClick={() => setActiveLabBench(t.topicId)}
+            >
+              {t.shortLabel}
+            </button>
+          ))}
+        </div>
+        <p className="meta" style={{ marginBottom: '8px' }}>
+          Now exploring: <b>{currentTopic?.title}</b>
+        </p>
+        <button type="button" className="btn g" onClick={openFullLesson}>
+          📖 Open Full Topic Lesson
+        </button>
       </div>
 
       <ConceptExplorer
-        topicId={activeLabBench}
-        stopTitle="Interactive AI & Mechatronics Workbench"
+        key={currentTopicId}
+        topicId={currentTopicId}
+        stopTitle={currentTopic?.title || area.label}
         onAskBot={(msg) => openBotWithPrompt(msg)}
+        onChallengeSolved={() => {
+          awardXp(20, `Solved simulation challenge on ${currentTopicId}`, 'Labs', true);
+          showToast('🎯 Explorer Challenge Solved! +20 XP');
+        }}
       />
     </section>
   );

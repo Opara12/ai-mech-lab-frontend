@@ -52,6 +52,10 @@ export default function QuizScreen({ active }) {
     }
   };
 
+  const handleRetryQuestion = () => {
+    setPicked(null);
+  };
+
   const handleNext = () => {
     if (qi + 1 >= questions.length) {
       setFinished(true);
@@ -115,6 +119,16 @@ export default function QuizScreen({ active }) {
               Question {qi + 1} of {questions.length}
             </p>
             <div style={{ display: 'flex', gap: '6px' }}>
+              {picked !== null && picked !== d.a && (
+                <button
+                  type="button"
+                  className="go"
+                  style={{ fontSize: '.76rem' }}
+                  onClick={handleRetryQuestion}
+                >
+                  🔄 Retry
+                </button>
+              )}
               {d.hint && (
                 <button
                   type="button"
@@ -184,15 +198,26 @@ export default function QuizScreen({ active }) {
             </div>
           )}
 
-          <button
-            className="btn"
-            id="qnx"
-            type="button"
-            style={{ display: picked !== null ? 'block' : 'none', marginTop: '10px' }}
-            onClick={handleNext}
-          >
-            Next
-          </button>
+          <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+            {picked !== null && picked !== d.a && (
+              <button
+                className="btn g"
+                type="button"
+                onClick={handleRetryQuestion}
+              >
+                🔄 Try Question Again
+              </button>
+            )}
+            <button
+              className="btn"
+              id="qnx"
+              type="button"
+              style={{ display: picked !== null ? 'block' : 'none' }}
+              onClick={handleNext}
+            >
+              Next
+            </button>
+          </div>
         </div>
       ) : (
         <div
@@ -205,16 +230,31 @@ export default function QuizScreen({ active }) {
             {qs} / {questions.length}
           </p>
           <p className="sub">+{deck?.xp || 50} XP earned</p>
-          <a
-            className="btn"
-            href="#quizzes"
-            onClick={(e) => {
-              e.preventDefault();
-              navTo('quizzes');
-            }}
-          >
-            Back to Practice
-          </a>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+            <button
+              className="btn g"
+              type="button"
+              onClick={() => {
+                setQi(0);
+                setQs(0);
+                setPicked(null);
+                setShowHint(false);
+                setFinished(false);
+              }}
+            >
+              🔄 Retry Quiz
+            </button>
+            <a
+              className="btn"
+              href="#quizzes"
+              onClick={(e) => {
+                e.preventDefault();
+                navTo('quizzes');
+              }}
+            >
+              Back to Practice
+            </a>
+          </div>
         </div>
       )}
     </section>

@@ -852,3 +852,324 @@ export const COURSE_TO_PROJECT_MAP = {
   }
 };
 
+// Varied Interactive Practical Exercises for each of the 22 PDF topics + robotics-pid
+export const TOPIC_PRACTICAL_EXERCISES = {
+  'mechatronics-m1-t1.1': {
+    badge: '🧩 Pillar Classifier',
+    title: 'Practical Exercise: Map Parts to the 4 Pillars of Mechatronics',
+    prompt: 'Assign each robot subsystem to its correct Mechatronics pillar (Mechanical, Electrical, Software, or Control):',
+    categories: ['Mechanical', 'Electrical', 'Software', 'Control'],
+    tasks: [
+      { label: 'Aluminum chassis frame, planetary gears & wheel linkage', answer: 'Mechanical' },
+      { label: '12V LiPo battery, H-bridge driver & PCB wiring harness', answer: 'Electrical' },
+      { label: 'Embedded C++ / Python obstacle-decision program', answer: 'Software' },
+      { label: 'Closed-loop PID speed regulator comparing encoder RPM to target', answer: 'Control' }
+    ],
+    hint: 'Ask whether each item provides physical structure/motion (Mechanical), power/signal routing (Electrical), programmed instructions (Software), or error-correcting feedback (Control).',
+    takeaway: 'Every true mechatronic system integrates all four pillars—removing any one breaks the intelligent machine.'
+  },
+  'mechatronics-m1-t1.2': {
+    badge: '🔄 Closed-Loop Tracer',
+    title: 'Practical Exercise: Trace the Sense → Think → Act → Feedback Loop',
+    prompt: 'Classify each action in a smart drone & washing machine into its stage of the closed-loop cycle:',
+    categories: ['1. Sense', '2. Think', '3. Act', '4. Feedback'],
+    tasks: [
+      { label: 'IMU gyroscope measures a 6° roll tilt caused by a wind gust', answer: '1. Sense' },
+      { label: 'Flight controller computes the motor speed correction needed to level out', answer: '2. Think' },
+      { label: 'Brushless motors spin faster on the dipped side to restore balance', answer: '3. Act' },
+      { label: 'Updated roll angle is continuously re-measured to verify the drone is level', answer: '4. Feedback' }
+    ],
+    hint: 'Follow the signal from physical measurement (Sense) → microcontroller calculation (Think) → motor output (Act) → re-checking the result (Feedback).',
+    takeaway: 'Unlike open-loop machines that run blindly on a timer, closed-loop mechatronic systems continuously verify and correct their output.'
+  },
+  'mechatronics-m1-t1.3': {
+    badge: '🛠️ Engineering Workflow Sequencer',
+    title: 'Practical Exercise: Order the Mechatronics Design Process',
+    prompt: 'Select the correct engineering stage for each action when building a new robot prototype:',
+    categories: ['Stage 1: Define', 'Stage 2: Model & CAD', 'Stage 3: Prototype', 'Stage 4: Test & Iterate'],
+    tasks: [
+      { label: 'Specify that the robot must detect obstacles within 25 cm and run for 30 minutes', answer: 'Stage 1: Define' },
+      { label: 'Sketch block diagrams, select sensors/motors, and check power budget before buying parts', answer: 'Stage 2: Model & CAD' },
+      { label: 'Wire the ultrasonic sensor and motor driver on a breadboard and upload test code', answer: 'Stage 3: Prototype' },
+      { label: 'Measure stopping distance on a real floor and tune the threshold after a wheel slips', answer: 'Stage 4: Test & Iterate' }
+    ],
+    hint: 'Start with requirements (Define), plan the architecture (Model), build a working bench setup (Prototype), and refine with real tests (Test & Iterate).',
+    takeaway: 'Testing subsystems early on a breadboard catches wiring and logic bugs before final assembly.'
+  },
+  'mechatronics-m2-t2.1': {
+    badge: '⚡ Circuit Fault Lab',
+    title: 'Practical Exercise: Predict Current Changes with Ohm’s Law (I = V / R)',
+    prompt: 'For each circuit change below, predict what happens to the electric current (I):',
+    categories: ['Current Doubles (2×)', 'Current Halves (0.5×)', 'Danger: Short Circuit!'],
+    tasks: [
+      { label: 'Supply voltage V is doubled from 5 V to 10 V while resistance R stays at 250 Ω', answer: 'Current Doubles (2×)' },
+      { label: 'Resistance R is doubled from 250 Ω to 500 Ω while voltage V stays at 5 V', answer: 'Current Halves (0.5×)' },
+      { label: 'A bare wire accidentally connects 5 V directly to GND with ~0 Ω resistance', answer: 'Danger: Short Circuit!' }
+    ],
+    hint: 'In I = V / R, voltage V is in the numerator (direct proportion) and resistance R is in the denominator (inverse proportion).',
+    takeaway: 'Voltage pushes charge forward, while resistance limits current to safe levels.'
+  },
+  'mechatronics-m2-t2.2': {
+    badge: '🔌 Wiring Topology Lab',
+    title: 'Practical Exercise: Series vs. Parallel Design Decisions',
+    prompt: 'Choose whether each circuit behavior describes a Series circuit or a Parallel circuit:',
+    categories: ['Series Circuit', 'Parallel Circuit'],
+    tasks: [
+      { label: 'The exact same current (I) flows through every component one after another', answer: 'Series Circuit' },
+      { label: 'Every branch receives the full supply voltage (V), and branches operate independently', answer: 'Parallel Circuit' },
+      { label: 'If one bulb or component burns out (open circuit), the entire loop goes dead', answer: 'Series Circuit' },
+      { label: 'Used to wire a microcontroller, sensor module, and motor driver across a shared 5V rail', answer: 'Parallel Circuit' }
+    ],
+    hint: 'In a single loop (Series), current has only one path; in separate branches across the rails (Parallel), each device gets the full rail voltage.',
+    takeaway: 'Sensors and ICs share common 5V/GND rails in parallel, while current-limiting resistors are placed in series with the load they protect.'
+  },
+  'mechatronics-m2-t2.3': {
+    badge: '🧰 Component Matcher',
+    title: 'Practical Exercise: Select the Right Electronic Component for the Job',
+    prompt: 'Match each circuit requirement to the essential component designed for it:',
+    categories: ['Resistor', 'Capacitor', 'Diode / LED', 'Transistor / MOSFET'],
+    tasks: [
+      { label: 'Limit current to 15 mA so an indicator light does not burn out', answer: 'Resistor' },
+      { label: 'Smooth out voltage dips across the power rails when a motor suddenly starts', answer: 'Capacitor' },
+      { label: 'Allow current to flow in only one direction (Anode → Cathode) and emit light', answer: 'Diode / LED' },
+      { label: 'Use a tiny 5V microcontroller pin signal to switch a high-current 12V motor load', answer: 'Transistor / MOSFET' }
+    ],
+    hint: 'Resistors resist flow, capacitors store charge to filter spikes, diodes enforce one-way flow, and transistors act as electronic switches.',
+    takeaway: 'Combining resistors, decoupling capacitors, protection diodes, and transistor switches forms the backbone of every robot controller board.'
+  },
+  'mechatronics-m2-t2.4': {
+    badge: '📟 Multimeter Bench Check',
+    title: 'Practical Exercise: Configure Your Digital Multimeter (DMM) Safely',
+    prompt: 'Select the correct multimeter probe connection for each diagnostic measurement:',
+    categories: ['Probes in Parallel (Power ON)', 'Probes in Series (Break Loop)', 'Probes Across Part (Power OFF)'],
+    tasks: [
+      { label: 'Measure whether a 9V battery or 5V regulator rail is delivering the right voltage (DC V)', answer: 'Probes in Parallel (Power ON)' },
+      { label: 'Measure the actual milliamps (mA) flowing into an LED circuit', answer: 'Probes in Series (Break Loop)' },
+      { label: 'Measure a resistor’s Ω value or beep-test a wire for continuity', answer: 'Probes Across Part (Power OFF)' }
+    ],
+    hint: 'Voltmeters have high impedance and tap across two points; ammeters have near-zero resistance and must be inserted inside the broken path.',
+    takeaway: 'Never place a multimeter in Current (A) mode directly across a battery in parallel—always measure voltage in parallel and current in series!'
+  },
+  'mechatronics-m3-t3.1': {
+    badge: '📡 Signal Classifier',
+    title: 'Practical Exercise: Analog vs. Digital Sensor Signals',
+    prompt: 'Classify each real-world sensor output as either an Analog Signal or a Digital Signal:',
+    categories: ['Analog Signal (Continuous)', 'Digital Signal (Discrete 0/1)'],
+    tasks: [
+      { label: 'Mechanical bumper limit switch that is either OPEN (0 V) or CLOSED (5 V)', answer: 'Digital Signal (Discrete 0/1)' },
+      { label: 'LDR photoresistor voltage divider that smoothly varies from 0.4 V in the dark to 4.6 V in bright light', answer: 'Analog Signal (Continuous)' },
+      { label: 'Potentiometer knob outputting any voltage between 0.00 V and 5.00 V', answer: 'Analog Signal (Continuous)' },
+      { label: 'IR obstacle module comparator pin that outputs HIGH (1) or LOW (0)', answer: 'Digital Signal (Discrete 0/1)' }
+    ],
+    hint: 'Does the signal jump between two states (HIGH/LOW), or can it take any continuous voltage value in between?',
+    takeaway: 'Digital sensors connect to `digitalRead()` pins, while continuous analog sensors connect to ADC pins (`analogRead(A0)`).'
+  },
+  'mechatronics-m3-t3.2': {
+    badge: '🔭 Sensor Selection Challenge',
+    title: 'Practical Exercise: Pick the Right Sensor for Each Robot Mission',
+    prompt: 'Select the best sensor from Topic 3.2 for each engineering requirement:',
+    categories: ['HC-SR04 Ultrasonic', 'IR Reflectance Pair', 'TMP36 / NTC Thermistor', 'IMU (Accelerometer + Gyro)'],
+    tasks: [
+      { label: 'Measure non-contact distance (2 cm to 400 cm) to a wall using acoustic echoes', answer: 'HC-SR04 Ultrasonic' },
+      { label: 'Detect a black tape line on a white floor beneath a line-following car', answer: 'IR Reflectance Pair' },
+      { label: 'Monitor battery or enclosure overheating in a Temperature Alarm project', answer: 'TMP36 / NTC Thermistor' },
+      { label: 'Measure 3-axis tilt angle and rotational velocity to keep a drone balanced', answer: 'IMU (Accelerometer + Gyro)' }
+    ],
+    hint: 'Match acoustic time-of-flight to Ultrasonic, surface light reflection to IR, heat to TMP36/Thermistor, and orientation to IMU.',
+    takeaway: 'Choosing the right sensor depends on range, environment lighting, surface properties, and update rate.'
+  },
+  'mechatronics-m3-t3.3': {
+    badge: '🔢 Microcontroller ADC Lab',
+    title: 'Practical Exercise: Convert 10-Bit `analogRead()` Values to Volts',
+    prompt: 'Given a 5.0 V reference and a 10-bit ADC (0 to 1023), match each `analogRead(A0)` reading to its voltage:',
+    categories: ['0.00 V', '2.50 V', '3.75 V', '5.00 V'],
+    tasks: [
+      { label: 'analogRead(A0) returns 0', answer: '0.00 V' },
+      { label: 'analogRead(A0) returns 512 (half of 1023)', answer: '2.50 V' },
+      { label: 'analogRead(A0) returns 768 (three-quarters of 1023)', answer: '3.75 V' },
+      { label: 'analogRead(A0) returns 1023 (full scale)', answer: '5.00 V' }
+    ],
+    hint: 'Use the formula V = (ADC_raw / 1023) × 5.0 V. Half of 1023 is ~512, which equals half of 5.0 V!',
+    takeaway: 'Every microcontroller sensor sketch converts raw integer counts (0–1023) back into physical units (Volts, °C, or cm).'
+  },
+  'mechatronics-m4-t4.1': {
+    badge: '⚙️ Actuator Selection Lab',
+    title: 'Practical Exercise: Match the Actuator to the Mechanical Task',
+    prompt: 'Choose the right actuator for each robot motion requirement:',
+    categories: ['DC Gearmotor', 'Hobby Servo Motor', 'Stepper Motor', 'Relay / Solenoid Driver'],
+    tasks: [
+      { label: 'Spin robot drive wheels continuously forward and backward with high torque', answer: 'DC Gearmotor' },
+      { label: 'Rotate a sensor pan mount or robot gripper to an exact angle like 90° and hold it', answer: 'Hobby Servo Motor' },
+      { label: 'Move a 3D printer axis in precise 1.8° open-loop steps without drift', answer: 'Stepper Motor' },
+      { label: 'Safely interface a low-current 5V Arduino pin to a high-current motor power rail', answer: 'Relay / Solenoid Driver' }
+    ],
+    hint: 'DC motors spin wheels continuously, servos hold specific angles (0°–180°), steppers advance in discrete steps, and drivers amplify current.',
+    takeaway: 'Never wire a motor directly to a microcontroller GPIO pin—always use the Controller → Driver → Actuator chain!'
+  },
+  'ai-m1-t1.1': {
+    badge: '🧠 AI / ML / DL Hierarchy Sorter',
+    title: 'Practical Exercise: Distinguish AI, Machine Learning, and Deep Learning',
+    prompt: 'Classify each system into its most specific tier (Rule-Based AI, Classical ML, or Deep Learning):',
+    categories: ['Rule-Based AI', 'Classical Machine Learning', 'Deep Learning (Neural Nets)'],
+    tasks: [
+      { label: 'Hard-coded thermostat logic: `if temp > 30: fan_on()` written entirely by a human', answer: 'Rule-Based AI' },
+      { label: 'Linear regression or decision tree trained on a table of 500 house prices and square footage', answer: 'Classical Machine Learning' },
+      { label: 'Multi-layer Convolutional Neural Network (CNN) recognizing traffic signs directly from raw camera pixels', answer: 'Deep Learning (Neural Nets)' }
+    ],
+    hint: 'Explicit `if/else` rules are Rule-Based AI; learning weights from tabular features is Classical ML; multi-layer neural networks on raw images/audio is Deep Learning.',
+    takeaway: 'Deep Learning is a specialized subset of Machine Learning, which itself is a subset of Artificial Intelligence.'
+  },
+  'ai-m1-t1.2': {
+    badge: '🌍 AI Application Architect',
+    title: 'Practical Exercise: Match Real-World Problems to the Right AI Domain',
+    prompt: 'Select which AI capability powers each real-world engineering system:',
+    categories: ['Computer Vision', 'Predictive Maintenance (Regression)', 'Natural Language Processing (NLP)', 'Autonomous Control'],
+    tasks: [
+      { label: 'Inspecting PCB solder joints on a factory line using an overhead camera', answer: 'Computer Vision' },
+      { label: 'Forecasting how many hours remain before a motor bearing overheats based on vibration logs', answer: 'Predictive Maintenance (Regression)' },
+      { label: 'Translating a voice command ("Turn left 30 degrees") into robot intent', answer: 'Natural Language Processing (NLP)' },
+      { label: 'Steering a warehouse robot around moving workers using lidar and ultrasonic sensors', answer: 'Autonomous Control' }
+    ],
+    hint: 'Cameras/images map to Computer Vision, time-to-failure logs map to Predictive Maintenance, speech/text maps to NLP, and motion navigation maps to Autonomous Control.',
+    takeaway: 'Successful AI projects pair a specific sensor data modality with a clear, measurable prediction or control action.'
+  },
+  'ai-m1-t1.3': {
+    badge: '⚖️ AI Safety & Ethics Auditor',
+    title: 'Practical Exercise: Diagnose Dataset Bias & Deployment Risks',
+    prompt: 'Identify the primary failure mode in each AI engineering scenario:',
+    categories: ['Sampling / Dataset Bias', 'Over-Reliance without Human Oversight', 'Privacy / Data Leak Risk'],
+    tasks: [
+      { label: 'A line-following vision model trained only under bright indoor LEDs fails outdoors in sunlight', answer: 'Sampling / Dataset Bias' },
+      { label: 'Deploying an automated medical triage score with zero clinician review or override button', answer: 'Over-Reliance without Human Oversight' },
+      { label: 'Uploading raw home security camera footage containing faces to an public training bucket', answer: 'Privacy / Data Leak Risk' }
+    ],
+    hint: 'Look at whether the issue comes from unrepresentative training conditions (Bias), missing safety checks (Oversight), or exposed personal data (Privacy).',
+    takeaway: 'An AI model is only as trustworthy as the diversity of its training data and the safety guardrails around its deployment.'
+  },
+  'ai-m2-t2.1': {
+    badge: '🐍 Python Logic Tracer',
+    title: 'Practical Exercise: Trace Python Control Flow for Sensor Data',
+    prompt: 'Given `readings = [12, 28, 35]` and a loop that flags values `>= 25` as `"ALERT"` and `< 25` as `"OK"`, match each expression to its Python output:',
+    categories: ['"OK"', '"ALERT"', '3', '25.0'],
+    tasks: [
+      { label: 'Status output for `readings[0]` (which is 12)', answer: '"OK"' },
+      { label: 'Status output for `readings[2]` (which is 35)', answer: '"ALERT"' },
+      { label: 'Result of `len(readings)`', answer: '3' },
+      { label: 'Result of `sum(readings) / len(readings)`', answer: '25.0' }
+    ],
+    hint: 'Check index 0 (`12 < 25` → `"OK"`), index 2 (`35 >= 25` → `"ALERT"`), list length (`3` items), and average `(12+28+35)/3 = 75/3 = 25.0`.',
+    takeaway: 'Python lists, loops, conditionals, and functions let you clean and filter raw sensor streams in just a few readable lines.'
+  },
+  'ai-m2-t2.2': {
+    badge: '🔢 NumPy Matrix Inspector',
+    title: 'Practical Exercise: Predict NumPy Shapes & Vectorized Operations',
+    prompt: 'Suppose `X = np.array([[1, 2, 3], [4, 5, 6]])` (2 rows of samples, 3 columns of features). Match each NumPy operation to its result:',
+    categories: ['(2, 3)', 'array([2, 4, 6])', '3.5', 'array([6, 15])'],
+    tasks: [
+      { label: '`X.shape` (rows, columns)', answer: '(2, 3)' },
+      { label: '`X[0] * 2` (vectorized scalar multiplication on first row)', answer: 'array([2, 4, 6])' },
+      { label: '`X.mean()` (average of all 6 numbers)', answer: '3.5' },
+      { label: '`X.sum(axis=1)` (row-wise sum for each sample)', answer: 'array([6, 15])' }
+    ],
+    hint: '`X` has 2 rows and 3 columns `(2, 3)`. Multiplying `[1, 2, 3] * 2` doubles each element; summing across columns (`axis=1`) gives `[1+2+3, 4+5+6] = [6, 15]`.',
+    takeaway: 'NumPy processes entire vectors and matrices at C speed without writing slow Python `for` loops.'
+  },
+  'ai-m3-t3.1': {
+    badge: '📐 Linear Algebra Calculator',
+    title: 'Practical Exercise: Compute Dot Products & Matrix Dimensions',
+    prompt: 'Match each linear algebra expression to its exact value or output shape:',
+    categories: ['11', '0 (Orthogonal)', '(32, 1)', '7'],
+    tasks: [
+      { label: 'Dot product `w · x` where `w = [2, 3]` and `x = [4, 1]` → `(2×4) + (3×1)`', answer: '11' },
+      { label: 'Neuron output `z = w · x + b` where `w · x = 10` and bias `b = -3`', answer: '7' },
+      { label: 'Dot product of perpendicular vectors `[1, 0]` and `[0, 5]`', answer: '0 (Orthogonal)' },
+      { label: 'Output shape of matrix multiplication `X @ W` where `X` is `(32, 4)` and `W` is `(4, 1)`', answer: '(32, 1)' }
+    ],
+    hint: 'Multiply matching coordinates and add them: `(2×4) + (3×1) = 8 + 3 = 11`. For matrix shape `(32, 4) @ (4, 1)`, the inner `4`s cancel leaving `(32, 1)`.',
+    takeaway: 'Every neural network layer is a matrix dot product `X @ W + b` computed across a batch of examples.'
+  },
+  'ai-m3-t3.2': {
+    badge: '🎲 Uncertainty & Probability Lab',
+    title: 'Practical Exercise: Interpret Sensor Noise, Variance & Softmax Probabilities',
+    prompt: 'Match each statistical scenario to the correct engineering conclusion:',
+    categories: ['Low Variance (Consistent)', 'High Variance / Outlier', '0.15 (15%)', 'Class A (Highest Probability)'],
+    tasks: [
+      { label: 'Ultrasonic sensor readings on a stationary wall: `[20.0, 20.1, 19.9, 20.0]` cm', answer: 'Low Variance (Consistent)' },
+      { label: 'Noisy sensor readings with a sudden spike: `[20.0, 19.8, 245.0, 20.1]` cm', answer: 'High Variance / Outlier' },
+      { label: 'In a 3-class classifier with probabilities `P(A)=0.75`, `P(B)=0.10`, what must `P(C)` equal so they sum to 1.0?', answer: '0.15 (15%)' },
+      { label: 'Final predicted label when model outputs `[P(A)=0.75, P(B)=0.10, P(C)=0.15]`', answer: 'Class A (Highest Probability)' }
+    ],
+    hint: 'Probabilities across mutually exclusive classes always sum to `1.0` (`1.0 - 0.75 - 0.10 = 0.15`). Tightly clustered readings have low variance.',
+    takeaway: 'Probability and statistics allow AI models and robots to quantify uncertainty and filter out noisy sensor glitches.'
+  },
+  'ai-m4-t4.1': {
+    badge: '🗂️ ML Paradigm Sorter',
+    title: 'Practical Exercise: Supervised vs. Unsupervised Learning',
+    prompt: 'Classify each machine learning task by its learning paradigm and output type:',
+    categories: ['Supervised: Regression', 'Supervised: Classification', 'Unsupervised: Clustering'],
+    tasks: [
+      { label: 'Predicting a battery’s exact remaining voltage (e.g. 11.42 V) from historical discharge curves with known labels', answer: 'Supervised: Regression' },
+      { label: 'Labeling camera frames as `"Obstacle"` vs. `"Clear Path"` using 1,000 human-labeled photos', answer: 'Supervised: Classification' },
+      { label: 'Grouping 10,000 unlabeled vibration logs into 3 natural operating regimes without any prior labels', answer: 'Unsupervised: Clustering' }
+    ],
+    hint: 'Do we have ground-truth target labels `y`? If yes: continuous number = Regression, discrete category = Classification. If no labels: Unsupervised Clustering.',
+    takeaway: 'Always start by checking whether your dataset has target labels (`y`) and whether the goal is a number, a category, or discovering hidden clusters.'
+  },
+  'ai-m4-t4.2': {
+    badge: '📈 Regression & Loss Calculator',
+    title: 'Practical Exercise: Evaluate Linear Regression Predictions (ŷ = wx + b)',
+    prompt: 'Given a trained regression line `ŷ = 2x + 1`, match each input or error query to its exact value:',
+    categories: ['ŷ = 7', 'Error = -1 (Residual)', 'Squared Error = 4', 'MSE = 0.0 (Perfect Fit)'],
+    tasks: [
+      { label: 'Predicted output `ŷ` when input feature `x = 3` (`2(3) + 1`)', answer: 'ŷ = 7' },
+      { label: 'Prediction error `y - ŷ` when actual `y = 6` and predicted `ŷ = 7`', answer: 'Error = -1 (Residual)' },
+      { label: 'Squared error `(y - ŷ)²` when actual `y = 9` and predicted `ŷ = 7`', answer: 'Squared Error = 4' },
+      { label: 'Mean Squared Error (MSE) when every data point lies exactly on the line `ŷ = 2x + 1`', answer: 'MSE = 0.0 (Perfect Fit)' }
+    ],
+    hint: 'Plug `x = 3` into `2(3) + 1 = 7`. For `(9 - 7)²`, square the difference `2² = 4`.',
+    takeaway: 'Squaring the residuals in MSE ensures positive and negative errors do not cancel out and heavily penalizes large misses.'
+  },
+  'ai-m4-t4.3': {
+    badge: '🎯 Confusion Matrix & Threshold Lab',
+    title: 'Practical Exercise: Diagnose Classifier Decisions',
+    prompt: 'In a defect detector (`1 = Defective Part`, `0 = Good Part`), classify each outcome:',
+    categories: ['True Positive (TP)', 'False Positive (FP)', 'False Negative (FN)', 'True Negative (TN)'],
+    tasks: [
+      { label: 'Model predicts `1 (Defective)` and the part really IS defective', answer: 'True Positive (TP)' },
+      { label: 'Model predicts `1 (Defective)` on a perfectly good part (false alarm)', answer: 'False Positive (FP)' },
+      { label: 'Model predicts `0 (Good)` and misses a cracked, defective part (dangerous miss!)', answer: 'False Negative (FN)' },
+      { label: 'Model predicts `0 (Good)` and the part really is good', answer: 'True Negative (TN)' }
+    ],
+    hint: 'True/False tells you whether the model was right or wrong; Positive/Negative tells you what the model predicted (`1` or `0`).',
+    takeaway: 'In safety-critical robotics and medical AI, minimizing False Negatives (high Recall) is often even more important than overall accuracy!'
+  },
+  'ai-m4-t4.4': {
+    badge: '🚀 Capstone Pipeline Builder',
+    title: 'Practical Exercise: Sequence the End-to-End ML Workflow',
+    prompt: 'Assign each code/engineering action to its proper stage in the Topic 4.4 Capstone pipeline:',
+    categories: ['1. Inspect & Clean Data', '2. Train/Test Split', '3. Fit Model (Train)', '4. Evaluate on Test Set'],
+    tasks: [
+      { label: 'Handle missing `NaN` sensor rows and check feature distributions', answer: '1. Inspect & Clean Data' },
+      { label: 'Hold out 20% of the dataset (`X_test, y_test`) before any model training', answer: '2. Train/Test Split' },
+      { label: 'Run `model.fit(X_train, y_train)` so the model learns weights from training examples', answer: '3. Fit Model (Train)' },
+      { label: 'Run `model.predict(X_test)` and compute accuracy/MSE on unseen data', answer: '4. Evaluate on Test Set' }
+    ],
+    hint: 'Clean first, split before training to prevent data leakage, fit on `X_train`, and evaluate on `X_test`.',
+    takeaway: 'Never evaluate a model on the same data it trained on—unseen test metrics tell you how the model will perform in the real world.'
+  },
+  'robotics-pid': {
+    badge: '🎛️ PID Tuning Diagnostic Lab',
+    title: 'Practical Exercise: Fix Robot Control Symptoms with P, I, and D',
+    prompt: 'Match each robot motion symptom to the PID gain adjustment that solves it:',
+    categories: ['Increase Kp (Proportional)', 'Increase Ki (Integral)', 'Increase Kd (Derivative)'],
+    tasks: [
+      { label: 'Robot reacts way too sluggishly when it drifts far off the line', answer: 'Increase Kp (Proportional)' },
+      { label: 'Robot crosses the target line too fast and oscillates back and forth (overshoot)', answer: 'Increase Kd (Derivative)' },
+      { label: 'Robot arm stops 2° short of target and never closes the final steady-state gap', answer: 'Increase Ki (Integral)' }
+    ],
+    hint: 'P provides immediate correction push, D acts as a brake against fast overshoot, and I accumulates persistent offset over time.',
+    takeaway: 'Balanced PID tuning combines fast rise time (P), zero steady-state offset (I), and smooth damping without overshoot (D).'
+  }
+};
+
+

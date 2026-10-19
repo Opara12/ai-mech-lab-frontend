@@ -30,6 +30,10 @@ export default function DashboardScreen({ active }) {
   const q = searchQuery.trim().toLowerCase();
   const matches = (text) => !q || text.toLowerCase().includes(q);
 
+  const mechDone = Math.max(3, tracks?.mechatronics?.a ?? 3);
+  const mechTotal = tracks?.mechatronics?.s?.length ?? 11;
+  const mechPct = Math.round((mechDone / Math.max(1, mechTotal)) * 100);
+
   const aiDone = tracks?.ai?.a ?? 4;
   const aiTotal = tracks?.ai?.s?.length ?? 11;
   const aiPct = Math.round((aiDone / Math.max(1, aiTotal)) * 100);
@@ -103,8 +107,8 @@ export default function DashboardScreen({ active }) {
             📖
           </div>
           <span>Courses enrolled</span>
-          <b>{12 + (customCourses?.length || 0)}</b>
-          <i className="up">↑ 2 this month</i>
+          <b>{2 + (customCourses?.length || 0)}</b>
+          <i className="up">22 interactive lessons</i>
         </div>
         <div className="stat">
           <div className="si" style={{ background: '#D2F5FB' }}>
@@ -157,23 +161,25 @@ export default function DashboardScreen({ active }) {
             </a>
           </div>
           <div className="courses">
-            {matches('Robotics Fundamentals Learn the basics of robots and their components.') && (
+            {matches('Mechatronics Foundations of Mechatronics, Basic Electronics, Sensors & Actuators.') && (
               <div className="course">
                 <div className="ct">
                   <img src={ASSETS.COURSE_ROBOTICS} alt="Robotic arm" />
                 </div>
                 <div className="cb">
-                  <h3>Robotics Fundamentals</h3>
-                  <p>Learn the basics of robots and their components.</p>
+                  <h3>Mechatronics</h3>
+                  <p>Foundations of Mechatronics, Electronics, Sensors &amp; Actuators.</p>
                   <div className="bar">
-                    <i style={{ width: '65%' }} />
+                    <i style={{ width: `${mechPct}%` }} />
                   </div>
                   <div className="cf">
-                    <span className="meta">6 / 10 lessons</span>
+                    <span className="meta">
+                      {mechDone} / {mechTotal} lessons
+                    </span>
                     <button
                       className="go"
                       type="button"
-                      onClick={() => handleOpenCourse('Robotics Fundamentals')}
+                      onClick={() => handleOpenCourse('Mechatronics')}
                     >
                       Continue
                     </button>
@@ -188,7 +194,7 @@ export default function DashboardScreen({ active }) {
                 </div>
                 <div className="cb">
                   <h3>Artificial Intelligence Basics</h3>
-                  <p>Understand AI concepts and applications.</p>
+                  <p>Understand AI concepts, Python, NumPy, and Machine Learning.</p>
                   <div className="bar">
                     <i style={{ width: `${aiPct}%` }} />
                   </div>
@@ -202,30 +208,6 @@ export default function DashboardScreen({ active }) {
                       onClick={() =>
                         handleOpenCourse('Artificial Intelligence Basics')
                       }
-                    >
-                      Continue
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-            {matches('Microcontrollers 101 Get started with Arduino and embedded systems.') && (
-              <div className="course">
-                <div className="ct">
-                  <img src={ASSETS.COURSE_MICRO} alt="Microcontroller board" />
-                </div>
-                <div className="cb">
-                  <h3>Microcontrollers 101</h3>
-                  <p>Get started with Arduino and embedded systems.</p>
-                  <div className="bar">
-                    <i style={{ width: '30%' }} />
-                  </div>
-                  <div className="cf">
-                    <span className="meta">3 / 10 lessons</span>
-                    <button
-                      className="go"
-                      type="button"
-                      onClick={() => handleOpenCourse('Microcontrollers 101')}
                     >
                       Continue
                     </button>

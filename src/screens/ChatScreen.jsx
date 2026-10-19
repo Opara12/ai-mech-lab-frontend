@@ -287,16 +287,16 @@ export default function ChatScreen({ active }) {
               <img src={ASSETS.COURSE_ROBOTICS} alt="Robotic arm" />
             </div>
             <div className="cb">
-              <h3>Robotics Fundamentals</h3>
+              <h3>Mechatronics</h3>
               <div className="bar" style={{ marginTop: '8px' }}>
-                <i style={{ width: '65%' }} />
+                <i style={{ width: '27%' }} />
               </div>
               <div className="cf">
-                <span className="meta">6 / 10 lessons</span>
+                <span className="meta">3 / 11 lessons</span>
                 <button
                   className="go"
                   type="button"
-                  onClick={() => handleOpenCourse('Robotics Fundamentals')}
+                  onClick={() => handleOpenCourse('Mechatronics')}
                 >
                   Continue
                 </button>
@@ -311,7 +311,7 @@ export default function ChatScreen({ active }) {
             <div className="cb">
               <h3>Artificial Intelligence Basics</h3>
               <div className="bar" style={{ marginTop: '8px' }}>
-                <i style={{ width: '40%' }} />
+                <i style={{ width: '36%' }} />
               </div>
               <div className="cf">
                 <span className="meta">4 / 11 lessons</span>
@@ -321,28 +321,6 @@ export default function ChatScreen({ active }) {
                   onClick={() =>
                     handleOpenCourse('Artificial Intelligence Basics')
                   }
-                >
-                  Continue
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="course">
-            <div className="ct">
-              <img src={ASSETS.COURSE_MICRO} alt="Microcontroller board" />
-            </div>
-            <div className="cb">
-              <h3>Microcontrollers 101</h3>
-              <div className="bar" style={{ marginTop: '8px' }}>
-                <i style={{ width: '30%' }} />
-              </div>
-              <div className="cf">
-                <span className="meta">3 / 10 lessons</span>
-                <button
-                  className="go"
-                  type="button"
-                  onClick={() => handleOpenCourse('Microcontrollers 101')}
                 >
                   Continue
                 </button>

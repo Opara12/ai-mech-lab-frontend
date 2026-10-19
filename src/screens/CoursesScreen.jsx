@@ -23,7 +23,32 @@ export default function CoursesScreen({ active }) {
     navTo('course');
   };
 
+  // All courses are preserved in baseCourses; only demoReady courses are shown in the visible demo list
   const baseCourses = [
+    {
+      key: 'mechatronics',
+      icon: null,
+      img: ASSETS.COURSE_ROBOTICS,
+      title: 'Mechatronics',
+      desc: 'Foundations of Mechatronics, Basic Electronics, Sensors & Actuators (11 Interactive PDF Lessons).',
+      progress: Math.max(27, Math.round(((tracks.mechatronics?.a || 3) / 11) * 100)),
+      meta: `${tracks.mechatronics?.a || 3} / 11 lessons`,
+      btnLabel: (tracks.mechatronics?.a || 0) > 0 ? 'Continue' : 'Start',
+      locked: false,
+      demoReady: true,
+    },
+    {
+      key: 'ai',
+      icon: null,
+      img: ASSETS.COURSE_AI,
+      title: 'Artificial Intelligence Basics',
+      desc: 'Understand AI, Python, NumPy, Linear Algebra & Machine Learning (11 Interactive PDF Lessons).',
+      progress: Math.round(((tracks.ai?.a || 4) / 11) * 100),
+      meta: `${tracks.ai?.a || 4} / 11 lessons`,
+      btnLabel: 'Continue',
+      locked: false,
+      demoReady: true,
+    },
     {
       key: 'drone',
       icon: '🚁',
@@ -34,6 +59,7 @@ export default function CoursesScreen({ active }) {
       meta: '5 / 6 modules',
       btnLabel: 'Continue',
       locked: false,
+      demoReady: false,
     },
     {
       key: 'robotics',
@@ -45,28 +71,7 @@ export default function CoursesScreen({ active }) {
       meta: '6 / 10 lessons',
       btnLabel: 'Continue',
       locked: false,
-    },
-    {
-      key: 'ai',
-      icon: null,
-      img: ASSETS.COURSE_AI,
-      title: 'Artificial Intelligence Basics',
-      desc: 'Understand AI concepts and applications (11 PDF Lessons).',
-      progress: 40,
-      meta: `${tracks.ai?.a || 3} / 11 lessons`,
-      btnLabel: 'Continue',
-      locked: false,
-    },
-    {
-      key: 'mechatronics',
-      icon: '🤖',
-      img: null,
-      title: 'Mechatronics',
-      desc: 'Foundations of Mechatronics, Basic Electronics, Sensors & Actuators (11 PDF Lessons).',
-      progress: Math.round(((tracks.mechatronics?.a || 0) / 11) * 100),
-      meta: `${tracks.mechatronics?.a || 0} / 11 lessons`,
-      btnLabel: (tracks.mechatronics?.a || 0) > 0 ? 'Continue' : 'Start',
-      locked: false,
+      demoReady: false,
     },
     {
       key: 'micro',
@@ -78,6 +83,7 @@ export default function CoursesScreen({ active }) {
       meta: '3 / 10 lessons',
       btnLabel: 'Continue',
       locked: false,
+      demoReady: false,
     },
     {
       key: 'elec',
@@ -89,6 +95,7 @@ export default function CoursesScreen({ active }) {
       meta: '4 / 4 lessons',
       btnLabel: 'View course',
       locked: false,
+      demoReady: false,
     },
     {
       key: 'sensors',
@@ -100,6 +107,7 @@ export default function CoursesScreen({ active }) {
       meta: '0 / 4 lessons',
       btnLabel: 'Start',
       locked: false,
+      demoReady: false,
     },
     {
       key: 'cv-locked',
@@ -112,15 +120,17 @@ export default function CoursesScreen({ active }) {
       btnLabel: 'Locked',
       locked: true,
       toast: 'Finish AI Basics to unlock Computer Vision',
+      demoReady: false,
     },
   ];
 
   const q = searchQuery.trim().toLowerCase();
   const filteredBase = baseCourses.filter(
     (c) =>
-      !q ||
-      c.title.toLowerCase().includes(q) ||
-      c.desc.toLowerCase().includes(q)
+      c.demoReady !== false &&
+      (!q ||
+        c.title.toLowerCase().includes(q) ||
+        c.desc.toLowerCase().includes(q))
   );
 
   const selectedCourseObj =

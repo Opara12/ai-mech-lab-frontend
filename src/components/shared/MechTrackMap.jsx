@@ -17,7 +17,7 @@ export default function MechTrackMap({ kind = 'course' }) {
     showToast
   } = useMechLab();
 
-  const defaultKey = kind === 'course' ? 'drone' : 'obstacle';
+  const defaultKey = kind === 'course' ? 'mechatronics' : 'obstacle';
   const key =
     activeTrackKeys[kind] && tracks[activeTrackKeys[kind]]?.k === kind
       ? activeTrackKeys[kind]
@@ -76,10 +76,9 @@ export default function MechTrackMap({ kind = 'course' }) {
   } done`;
 
   const handleStationClick = (idx, status) => {
+    openLesson(key, idx);
     if (status === 'lock') {
-      showToast('Locked: finish the previous step first');
-    } else {
-      openLesson(key, idx);
+      showToast(`Exploring Station ${idx + 1}: ${d.s[idx]}`);
     }
   };
 
@@ -113,6 +112,26 @@ export default function MechTrackMap({ kind = 'course' }) {
         <h1>My MechTracks</h1>
       </div>
       <p className="sub">{subText}</p>
+      {kind === 'course' && (
+        <div className="chips" style={{ marginBottom: '10px' }}>
+          <button
+            type="button"
+            className="chip"
+            aria-pressed={key === 'mechatronics' ? 'true' : 'false'}
+            onClick={() => selectTrackByTitleOrKey('course', 'mechatronics')}
+          >
+            🤖 Mechatronics (11 Interactive Lessons)
+          </button>
+          <button
+            type="button"
+            className="chip"
+            aria-pressed={key === 'ai' ? 'true' : 'false'}
+            onClick={() => selectTrackByTitleOrKey('course', 'ai')}
+          >
+            🧠 AI Basics (11 Interactive Lessons)
+          </button>
+        </div>
+      )}
       <div className="mt" style={{ aspectRatio: `360/${H}` }}>
         <svg viewBox={`0 0 360 ${H}`} aria-hidden="true">
           <defs>

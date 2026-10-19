@@ -32,6 +32,7 @@ import {
   INITIAL_ACTIVE_THREAD,
   buildCommunityPost
 } from '../services/communityService';
+import { PROJECT_LESSON_BRIDGES } from '../data/interactiveClassroomData';
 
 const MechLabContext = createContext(null);
 
@@ -109,7 +110,7 @@ export function MechLabProvider({ children }) {
   const [customCourses, setCustomCourses] = useState([]);
   const [customProjects, setCustomProjects] = useState([]);
   const [activeTrackKeys, setActiveTrackKeys] = useState({
-    course: 'drone',
+    course: 'mechatronics',
     project: 'obstacle'
   });
 
@@ -118,7 +119,7 @@ export function MechLabProvider({ children }) {
 
   // Phase 1 & 2: Active Quiz Deck and Active Lab Bench
   const [activeQuizDeckId, setActiveQuizDeckId] = useState('daily');
-  const [activeLabBench, setActiveLabBench] = useState('robotics-pid');
+  const [activeLabBench, setActiveLabBench] = useState('mechatronics-m1-t1.1');
 
   // Phase 3: Socratic Hint Tier tracking per topic
   const [socraticHintTiers, setSocraticHintTiers] = useState({});
@@ -395,11 +396,19 @@ export function MechLabProvider({ children }) {
   // Resolve current active lesson data from coursesData.json if available
   const getCurrentLessonData = useCallback(() => {
     const { courseKey, stepIndex } = activeLessonState;
-    const tr = tracks[courseKey] || tracks.ai;
+    const tr = tracks[courseKey] || tracks.mechatronics || tracks.ai;
     const courseSlug = tr.courseSlug || (courseKey === 'ai' ? 'ai' : courseKey === 'mechatronics' ? 'mechatronics' : null);
     let topicData = null;
     if (courseSlug && tr.topicSlugs && tr.topicSlugs[stepIndex]) {
       topicData = getTopicByCourseAndSlug(courseSlug, tr.topicSlugs[stepIndex]);
+    } else if (PROJECT_LESSON_BRIDGES[courseKey]?.stations?.[stepIndex]) {
+      const stationBridge = PROJECT_LESSON_BRIDGES[courseKey].stations[stepIndex];
+      const linkedTrack = tracks[stationBridge.courseKey];
+      const targetIdx = stationBridge.lessonStepIndex ?? stationBridge.stepIndex;
+      const linkedSlug = linkedTrack?.topicSlugs?.[targetIdx];
+      if (linkedSlug) {
+        topicData = getTopicByCourseAndSlug(stationBridge.courseKey, linkedSlug);
+      }
     }
     return {
       courseKey,
