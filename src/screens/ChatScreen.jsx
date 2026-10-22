@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useMechLab } from '../context/MechLabContext';
 import { ASSETS } from '../data/brandAssets';
+import MechBotActionCard from '../components/shared/MechBotActionCard';
 
 export default function ChatScreen({ active }) {
   const {
@@ -11,10 +12,17 @@ export default function ChatScreen({ active }) {
     sendMechBotMessage,
     resetChat,
     selectTrackByTitleOrKey,
-    getCurrentLessonData
+    getCurrentLessonData,
+    chatHistory,
+    loadChatHistorySession,
+    handleSelectProjectMode,
+    tracks,
+    customCourses
   } = useMechLab();
 
-  const { topicData, stopTitle, topicId } = getCurrentLessonData();
+  const [lessonHelpOpen, setLessonHelpOpen] = useState(false);
+
+  const { topicData, stopTitle } = getCurrentLessonData();
   const activeLessonTitle = topicData
     ? `${topicData.topicCode}: ${topicData.title}`
     : stopTitle;
@@ -24,13 +32,38 @@ export default function ChatScreen({ active }) {
     navTo('course');
   };
 
+  // Real courses for "My courses" tab
+  const enrolledCourses = [
+    {
+      key: 'mechatronics',
+      title: 'Mechatronics',
+      img: ASSETS.COURSE_ROBOTICS,
+      track: tracks?.mechatronics,
+      fallbackTotal: 11
+    },
+    {
+      key: 'ai',
+      title: 'Artificial Intelligence Basics',
+      img: ASSETS.COURSE_AI,
+      track: tracks?.ai,
+      fallbackTotal: 11
+    },
+    ...(customCourses || []).map((cc) => ({
+      key: cc.key,
+      title: cc.title,
+      track: tracks?.[cc.key],
+      fallbackTotal: cc.stopsCount || 5
+    }))
+  ];
+
   return (
     <section className={`screen${active ? ' show' : ''}`} id="chat">
-      <div className="hdr">
+      {/* Top Header - Exactly as in the design reference */}
+      <div className="hdr chat-header" style={{ marginBottom: '12px' }}>
         <a
           className="back"
           href="#dash"
-          aria-label="Back"
+          aria-label="Back to dashboard"
           onClick={(e) => {
             e.preventDefault();
             navTo('dash');
@@ -40,12 +73,12 @@ export default function ChatScreen({ active }) {
         </a>
         <img
           src={ASSETS.BOT_AVATAR_HEADER}
-          alt=""
-          style={{ height: '40px' }}
+          alt="Mech Bot"
+          style={{ height: '38px', width: '38px', objectFit: 'contain' }}
         />
-        <div style={{ flex: 1 }}>
-          <b>Mech Bot</b>
-          <span className="on" style={{ margin: 0 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <b style={{ fontSize: '1.05rem', display: 'block', lineHeight: 1.2 }}>Mech Bot</b>
+          <span className="on" style={{ margin: 0, fontSize: '.78rem', color: '#22c55e' }}>
             ● Online
           </span>
         </div>
@@ -53,6 +86,7 @@ export default function ChatScreen({ active }) {
           className="chip"
           id="newc"
           type="button"
+          style={{ padding: '6px 14px', fontSize: '.86rem', borderRadius: '99px' }}
           onClick={() => {
             resetChat();
             setChatTab('chat');
@@ -62,7 +96,8 @@ export default function ChatScreen({ active }) {
         </button>
       </div>
 
-      <div className="chips">
+      {/* Pill Tabs: Chat (active solid blue), My courses, History */}
+      <div className="chips chat-tabs" style={{ marginBottom: '14px', gap: '8px' }}>
         <button
           className="chip"
           type="button"
@@ -92,128 +127,126 @@ export default function ChatScreen({ active }) {
         </button>
       </div>
 
+      {/* TAB 1: LIVE CHAT */}
       <div className={`tp${chatTab === 'chat' ? ' show' : ''}`} id="t-chat">
-        {/* Phase 3: Active Classroom Context & 3-Tier Socratic Coaching Bar */}
-        <div className="card" style={{ marginBottom: '10px', padding: '10px 12px' }}>
+        {/* Compact, non-intrusive Socratic Coach bar for current lesson */}
+        <div className="card chat-lesson-bar" style={{ marginBottom: '12px', padding: '8px 12px' }}>
           <div
             style={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: '6px',
-              marginBottom: '6px'
+              cursor: 'pointer'
             }}
+            onClick={() => setLessonHelpOpen(!lessonHelpOpen)}
           >
-            <small className="meta">
-              <b>Active Lesson Context:</b> {activeLessonTitle}
+            <small className="meta" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>📖</span>
+              <span><b>Lesson Helper:</b> {activeLessonTitle}</span>
             </small>
-            <button
-              type="button"
-              className="go"
-              style={{ fontSize: '.74rem' }}
-              onClick={() => navTo('lesson')}
-            >
-              📖 Return to Lesson
-            </button>
+            <span style={{ fontSize: '.75rem', color: 'var(--blue)', fontWeight: 600 }}>
+              {lessonHelpOpen ? '▲ Hide' : '▼ Socratic Hints'}
+            </span>
           </div>
-          <div className="chips" style={{ margin: 0 }}>
-            <button
-              type="button"
-              className="chip"
-              onClick={() =>
-                sendMechBotMessage(
-                  `Give me a Tier 1 guiding question for ${activeLessonTitle}`,
-                  1
-                )
-              }
-            >
-              🤔 Tier 1: Guiding Question
-            </button>
-            <button
-              type="button"
-              className="chip"
-              onClick={() =>
-                sendMechBotMessage(
-                  `Give me a Tier 2 concept clue for ${activeLessonTitle}`,
-                  2
-                )
-              }
-            >
-              💡 Tier 2: Concept Clue
-            </button>
-            <button
-              type="button"
-              className="chip"
-              onClick={() =>
-                sendMechBotMessage(
-                  `Give me a Tier 3 step-by-step breakdown for ${activeLessonTitle}`,
-                  3
-                )
-              }
-            >
-              🔎 Tier 3: Step-by-Step
-            </button>
-          </div>
+
+          {lessonHelpOpen && (
+            <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--line)' }}>
+              <div className="chips" style={{ margin: 0, gap: '6px' }}>
+                <button
+                  type="button"
+                  className="chip"
+                  style={{ fontSize: '.76rem', padding: '4px 10px' }}
+                  onClick={() =>
+                    sendMechBotMessage(
+                      `Give me a Tier 1 guiding question for ${activeLessonTitle}`,
+                      1
+                    )
+                  }
+                >
+                  🤔 Tier 1: Guiding Question
+                </button>
+                <button
+                  type="button"
+                  className="chip"
+                  style={{ fontSize: '.76rem', padding: '4px 10px' }}
+                  onClick={() =>
+                    sendMechBotMessage(
+                      `Give me a Tier 2 concept clue for ${activeLessonTitle}`,
+                      2
+                    )
+                  }
+                >
+                  💡 Tier 2: Concept Clue
+                </button>
+                <button
+                  type="button"
+                  className="chip"
+                  style={{ fontSize: '.76rem', padding: '4px 10px' }}
+                  onClick={() =>
+                    sendMechBotMessage(
+                      `Give me a Tier 3 step-by-step breakdown for ${activeLessonTitle}`,
+                      3
+                    )
+                  }
+                >
+                  🔎 Tier 3: Step-by-Step
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
+        {/* Empty State Greeting & Quick Starters */}
         {chatMessages.length === 0 && (
-          <div className="hello" id="hello">
-            <img className="hm" src={ASSETS.BOT_MASCOT} alt="" />
-            <h2 className="hg">
+          <div className="hello" id="hello" style={{ padding: '10px 0 16px' }}>
+            <img className="hm" src={ASSETS.BOT_MASCOT} alt="" style={{ height: '72px' }} />
+            <h2 className="hg" style={{ marginTop: '8px' }}>
               Hey <span className="nick">Mech Learner</span>
             </h2>
-            <p className="hq">Planning to start a new build?</p>
+            <p className="hq" style={{ marginBottom: '14px' }}>What are you planning to build or learn today?</p>
             <button
               className="sgt"
               type="button"
-              onClick={() => sendMechBotMessage('Suggest a course for me')}
+              onClick={() => sendMechBotMessage('how to build a drone')}
             >
-              <span>🎓</span>
-              <b>Ask Mech Bot to suggest a course</b>
+              <span>🚁</span>
+              <b>How to build a drone</b>
               <i>›</i>
             </button>
             <button
               className="sgt"
               type="button"
-              onClick={() => sendMechBotMessage('Suggest a project for me')}
+              onClick={() => sendMechBotMessage('how to build an obstacle robot')}
             >
-              <span>🛠️</span>
-              <b>Ask Mech Bot to suggest a project</b>
+              <span>🤖</span>
+              <b>How to build an obstacle robot</b>
               <i>›</i>
             </button>
             <button
               className="sgt"
               type="button"
-              onClick={() =>
-                sendMechBotMessage(
-                  `Give me a Socratic hint on ${activeLessonTitle}`,
-                  1
-                )
-              }
+              onClick={() => sendMechBotMessage('how to build an AI chatbot')}
             >
-              <span>🤔</span>
-              <b>Socratic coach: Hint on current lesson</b>
+              <span>💬</span>
+              <b>How to build an AI chatbot</b>
               <i>›</i>
             </button>
             <button
               className="sgt"
               type="button"
-              onClick={() =>
-                sendMechBotMessage(
-                  `How do I apply ${activeLessonTitle} to a project?`
-                )
-              }
+              onClick={() => sendMechBotMessage('I want to learn AI')}
             >
-              <span>🔌</span>
-              <b>Connect current lesson to a hardware project</b>
+              <span>🧠</span>
+              <b>I want to learn AI</b>
               <i>›</i>
             </button>
           </div>
         )}
 
+        {/* Conversation Stream */}
         <div className="msgs" id="msgs">
           {chatMessages.map((msg) => {
+            // User message bubble (solid blue, right aligned)
             if (msg.role === 'u') {
               return (
                 <div key={msg.id} className="m u">
@@ -222,6 +255,7 @@ export default function ChatScreen({ active }) {
               );
             }
 
+            // Bot typing state with thinking steps
             if (msg.typing) {
               return (
                 <div key={msg.id} className="m b typ">
@@ -232,9 +266,7 @@ export default function ChatScreen({ active }) {
                     return (
                       <div
                         key={idx}
-                        className={`sl${isDone ? ' done' : ''}${
-                          isCur ? ' cur' : ''
-                        }`}
+                        className={`sl${isDone ? ' done' : ''}${isCur ? ' cur' : ''}`}
                       >
                         <span className="ck">{isDone ? '✓' : '✦'}</span>
                         <span>{stepText}</span>
@@ -245,16 +277,37 @@ export default function ChatScreen({ active }) {
               );
             }
 
+            // Bot response bubble (dark card with text and optional interactive mode cards)
             return (
               <div key={msg.id} className="m b">
-                <div>{msg.answer}</div>
+                <div style={{ whiteSpace: 'pre-line' }}>{msg.answer}</div>
+
+                {/* Interactive Mode Cards (e.g. Learn Mode vs. Build Mode) */}
+                {msg.cards && msg.cards.length > 0 && (
+                  <div className="bot-cards-grid">
+                    {msg.cards.map((c) => (
+                      <MechBotActionCard
+                        key={c.id}
+                        icon={c.icon}
+                        title={c.title}
+                        subtitle={c.subtitle}
+                        badge={c.badge}
+                        onClick={() => handleSelectProjectMode(c.projectId, c.mode)}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Ordered step list if applicable */}
                 {msg.list && (
-                  <ol className="sl2">
+                  <ol className="sl2" style={{ marginTop: '10px' }}>
                     {msg.list.map((item, i) => (
                       <li key={i}>{item}</li>
                     ))}
                   </ol>
                 )}
+
+                {/* Action Link Button */}
                 {msg.link && (
                   <a
                     className="mlink"
@@ -276,61 +329,62 @@ export default function ChatScreen({ active }) {
         </div>
       </div>
 
+      {/* TAB 2: MY COURSES */}
       <div
         className={`tp${chatTab === 'courses' ? ' show' : ''}`}
         id="t-courses"
       >
         <h2 style={{ marginBottom: '10px' }}>Courses in progress</h2>
         <div className="courses">
-          <div className="course">
-            <div className="ct">
-              <img src={ASSETS.COURSE_ROBOTICS} alt="Robotic arm" />
-            </div>
-            <div className="cb">
-              <h3>Mechatronics</h3>
-              <div className="bar" style={{ marginTop: '8px' }}>
-                <i style={{ width: '27%' }} />
-              </div>
-              <div className="cf">
-                <span className="meta">3 / 11 lessons</span>
-                <button
-                  className="go"
-                  type="button"
-                  onClick={() => handleOpenCourse('Mechatronics')}
-                >
-                  Continue
-                </button>
-              </div>
-            </div>
-          </div>
+          {enrolledCourses.map((c) => {
+            const tr = c.track;
+            const completedCount = tr?.a ?? 0;
+            const totalCount = tr?.s?.length || c.fallbackTotal;
+            const pct = Math.min(100, Math.round((completedCount / totalCount) * 100));
 
-          <div className="course">
-            <div className="ct">
-              <img src={ASSETS.COURSE_AI} alt="AI brain" />
-            </div>
-            <div className="cb">
-              <h3>Artificial Intelligence Basics</h3>
-              <div className="bar" style={{ marginTop: '8px' }}>
-                <i style={{ width: '36%' }} />
+            return (
+              <div className="course" key={c.key}>
+                <div className="ct">
+                  {c.img ? (
+                    <img src={c.img} alt={c.title} />
+                  ) : (
+                    <div
+                      style={{
+                        background: 'var(--tile)',
+                        display: 'grid',
+                        placeItems: 'center',
+                        aspectRatio: '3/2',
+                        fontSize: '2rem'
+                      }}
+                    >
+                      🎓
+                    </div>
+                  )}
+                </div>
+                <div className="cb">
+                  <h3>{c.title}</h3>
+                  <div className="bar" style={{ marginTop: '8px' }}>
+                    <i style={{ width: `${pct}%` }} />
+                  </div>
+                  <div className="cf">
+                    <span className="meta">{completedCount} / {totalCount} lessons ({pct}%)</span>
+                    <button
+                      className="go"
+                      type="button"
+                      onClick={() => handleOpenCourse(c.title)}
+                    >
+                      Continue
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div className="cf">
-                <span className="meta">4 / 11 lessons</span>
-                <button
-                  className="go"
-                  type="button"
-                  onClick={() =>
-                    handleOpenCourse('Artificial Intelligence Basics')
-                  }
-                >
-                  Continue
-                </button>
-              </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
         <a
           className="btn g"
           href="#courses"
+          style={{ marginTop: '14px' }}
           onClick={(e) => {
             e.preventDefault();
             navTo('courses');
@@ -340,64 +394,44 @@ export default function ChatScreen({ active }) {
         </a>
       </div>
 
+      {/* TAB 3: REAL CHAT HISTORY */}
       <div className={`tp${chatTab === 'hist' ? ' show' : ''}`} id="t-hist">
-        <div className="card">
-          <button
-            className="row hb"
-            type="button"
-            onClick={() => {
-              setChatTab('chat');
-              sendMechBotMessage('How does a PID controller work?');
-            }}
-          >
-            <div className="ti">💬</div>
-            <div>
-              How does a PID controller work?<small>Today</small>
-            </div>
-            <time>Open</time>
-          </button>
-          <button
-            className="row hb"
-            type="button"
-            onClick={() => {
-              setChatTab('chat');
-              sendMechBotMessage('Arduino or ESP32 for my first robot?');
-            }}
-          >
-            <div className="ti">💬</div>
-            <div>
-              Arduino or ESP32 for my first robot?<small>Yesterday</small>
-            </div>
-            <time>Open</time>
-          </button>
-          <button
-            className="row hb"
-            type="button"
-            onClick={() => {
-              setChatTab('chat');
-              sendMechBotMessage("Explain Ohm's law with an example");
-            }}
-          >
-            <div className="ti">💬</div>
-            <div>
-              Explain Ohm&apos;s law with an example<small>3 days ago</small>
-            </div>
-            <time>Open</time>
-          </button>
-          <button
-            className="row hb"
-            type="button"
-            onClick={() => {
-              setChatTab('chat');
-              sendMechBotMessage('Suggest a beginner AI project');
-            }}
-          >
-            <div className="ti">💬</div>
-            <div>
-              Suggest a beginner AI project<small>Last week</small>
-            </div>
-            <time>Open</time>
-          </button>
+        <h2 style={{ marginBottom: '10px' }}>Previous conversations</h2>
+        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+          {chatHistory && chatHistory.length > 0 ? (
+            chatHistory.map((item) => (
+              <button
+                key={item.id}
+                className="row hb"
+                type="button"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '12px 14px',
+                  borderBottom: '1px solid var(--line)',
+                  cursor: 'pointer',
+                  width: '100%',
+                  background: 'none'
+                }}
+                onClick={() => loadChatHistorySession(item.id)}
+              >
+                <div className="ti" style={{ marginRight: '10px', fontSize: '1.1rem' }}>💬</div>
+                <div style={{ flex: 1, textAlign: 'left', minWidth: 0 }}>
+                  <b style={{ display: 'block', fontSize: '.9rem', color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {item.title}
+                  </b>
+                  <small style={{ color: 'var(--soft)' }}>{item.timeLabel || 'Recent'}</small>
+                </div>
+                <span className="go" style={{ padding: '4px 10px', fontSize: '.78rem', marginLeft: '8px' }}>
+                  Open
+                </span>
+              </button>
+            ))
+          ) : (
+            <p className="meta" style={{ padding: '16px', margin: 0, textAlign: 'center' }}>
+              No previous conversations yet. Ask Mech Bot anything!
+            </p>
+          )}
         </div>
       </div>
     </section>

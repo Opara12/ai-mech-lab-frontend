@@ -74,13 +74,21 @@ export default function GlobalOverlays() {
       </div>
 
       <div
-        className="inp"
+        className="inp chat-bottom-bar"
         style={
           currentScreen === 'chat' && chatTab === 'chat'
             ? { display: 'flex' }
             : undefined
         }
       >
+        <button
+          type="button"
+          className="chat-menu-btn"
+          aria-label="All screens menu"
+          onClick={() => setScreenMenuOpen(true)}
+        >
+          ▦
+        </button>
         <input
           className="f"
           id="ci"

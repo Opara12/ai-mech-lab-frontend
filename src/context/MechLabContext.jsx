@@ -10,7 +10,8 @@ import {
   getTopicByCourseAndSlug,
   getSavedProgress,
   saveTopicCompletion,
-  saveCustomTrack
+  saveCustomTrack,
+  getSavedCustomTracks
 } from '../services/courseService';
 import { planMechBotResponse } from '../services/aiAssistantService';
 import {
@@ -95,7 +96,8 @@ export function MechLabProvider({ children }) {
   // 3. Tracks, Courses, Projects, and Active Lesson State
   const [tracks, setTracks] = useState(() => {
     const saved = getSavedProgress();
-    const copy = JSON.parse(JSON.stringify(INITIAL_TRACKS));
+    const savedCustom = getSavedCustomTracks();
+    const copy = { ...JSON.parse(JSON.stringify(INITIAL_TRACKS)), ...savedCustom };
     Object.keys(saved).forEach((k) => {
       if (copy[k] && typeof saved[k] === 'number') {
         copy[k].a = Math.min(saved[k], copy[k].s.length);
@@ -107,8 +109,19 @@ export function MechLabProvider({ children }) {
     return copy;
   });
 
-  const [customCourses, setCustomCourses] = useState([]);
-  const [customProjects, setCustomProjects] = useState([]);
+  const [customCourses, setCustomCourses] = useState(() => {
+    const savedCustom = getSavedCustomTracks();
+    return Object.entries(savedCustom)
+      .filter(([, v]) => v.k === 'course')
+      .map(([key, v]) => ({ key, title: v.t, stopsCount: v.s?.length || 0 }));
+  });
+
+  const [customProjects, setCustomProjects] = useState(() => {
+    const savedCustom = getSavedCustomTracks();
+    return Object.entries(savedCustom)
+      .filter(([, v]) => v.k === 'project')
+      .map(([key, v]) => ({ key, title: v.t, stopsCount: v.s?.length || 0 }));
+  });
   const [activeTrackKeys, setActiveTrackKeys] = useState({
     course: 'mechatronics',
     project: 'obstacle'
@@ -200,6 +213,19 @@ export function MechLabProvider({ children }) {
   const [chatMessages, setChatMessages] = useState([]);
   const chatTimersRef = useRef([]);
 
+  const [chatHistory, setChatHistory] = useState(() => {
+    try {
+      const raw = localStorage.getItem('mlChatHistory_v1');
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return [
+      { id: 'hist-1', title: 'how to build a drone', timeLabel: 'Today', messages: [] },
+      { id: 'hist-2', title: 'Arduino or ESP32 for my first robot?', timeLabel: 'Yesterday', messages: [] },
+      { id: 'hist-3', title: "Explain Ohm's law with an example", timeLabel: '3 days ago', messages: [] },
+      { id: 'hist-4', title: 'Suggest a beginner AI project', timeLabel: 'Last week', messages: [] }
+    ];
+  });
+
   const clearChatTimers = () => {
     chatTimersRef.current.forEach(clearTimeout);
     chatTimersRef.current = [];
@@ -207,8 +233,37 @@ export function MechLabProvider({ children }) {
 
   const resetChat = useCallback(() => {
     clearChatTimers();
+    if (chatMessages.length > 0) {
+      const firstUserMsg = chatMessages.find((m) => m.role === 'u');
+      const title = firstUserMsg ? firstUserMsg.text : 'Build exploration session';
+      const newHistItem = {
+        id: 'hist-' + Date.now(),
+        title: title.slice(0, 50),
+        timeLabel: 'Just now',
+        messages: chatMessages
+      };
+      setChatHistory((prev) => {
+        const updated = [newHistItem, ...prev.filter((h) => h.id !== newHistItem.id)].slice(0, 20);
+        try {
+          localStorage.setItem('mlChatHistory_v1', JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+    }
     setChatMessages([]);
-  }, []);
+  }, [chatMessages]);
+
+  const loadChatHistorySession = useCallback((sessionId) => {
+    const item = chatHistory.find((h) => h.id === sessionId);
+    if (item && item.messages && item.messages.length > 0) {
+      clearChatTimers();
+      setChatMessages(item.messages);
+      setChatTab('chat');
+    } else if (item && item.title) {
+      setChatTab('chat');
+      sendMechBotMessage(item.title);
+    }
+  }, [chatHistory]);
 
   // Navigation helper
   const navTo = useCallback((target) => {
@@ -464,7 +519,9 @@ export function MechLabProvider({ children }) {
         activeStep: 1,
         answer: plan.a,
         list: plan.list || null,
-        link: plan.l || null
+        link: plan.l || null,
+        cards: plan.cards || null,
+        blueprint: plan.blueprint || null
       }
     ]);
 
@@ -496,6 +553,10 @@ export function MechLabProvider({ children }) {
       }, 80);
     }
   }, [navTo, sendMechBotMessage]);
+
+  const handleSelectProjectMode = useCallback((projectId, mode) => {
+    sendMechBotMessage(`select ${mode} mode for ${projectId}`);
+  }, [sendMechBotMessage]);
 
   // Phase 3 helper: request escalating Socratic coaching tier (Tier 1 -> 2 -> 3)
   const requestSocraticCoaching = useCallback((topicId) => {
@@ -649,7 +710,10 @@ export function MechLabProvider({ children }) {
     chatMessages,
     sendMechBotMessage,
     resetChat,
-    openBotWithPrompt
+    openBotWithPrompt,
+    chatHistory,
+    loadChatHistorySession,
+    handleSelectProjectMode
   };
 
   return (

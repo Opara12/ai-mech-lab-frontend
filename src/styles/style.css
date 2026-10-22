@@ -305,3 +305,26 @@ body.rm .gph::after{animation:none}
 .lesson-table th,.lesson-table td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
 .lesson-table th{background:var(--tile);font-weight:700;color:var(--blue)}
 .lesson-table tr:last-child td{border-bottom:0}
+
+/* Mech Bot Redesign - Scoped Styles Aligned with Dark Reference */
+body.chat.ctab .pill{display:none}
+.chat-bottom-bar{padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px)) 12px!important}
+.chat-menu-btn{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);display:grid;place-items:center;font-size:1.15rem;flex:none;cursor:pointer;transition:border-color .15s ease}
+.chat-menu-btn:hover,.chat-menu-btn:focus-visible{border-color:var(--blue);color:var(--blue)}
+
+.bot-cards-grid{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.bot-mode-card{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;color:var(--ink);font:inherit;cursor:pointer;transition:transform .15s ease,border-color .15s ease,background-color .15s ease}
+.bot-mode-card:hover,.bot-mode-card:focus-visible{border-color:var(--blue);background:var(--tile);transform:translateY(-1px)}
+.bot-mode-card-icon{font-size:1.85rem;line-height:1;flex:none}
+.bot-mode-card-body{flex:1;min-width:0}
+.bot-mode-card-title{font-size:.96rem;font-weight:700;color:var(--ink);line-height:1.25;margin-bottom:3px}
+.bot-mode-card-sub{font-size:.82rem;color:var(--soft);line-height:1.35}
+
+#chat .m.u{border-radius:18px 18px 4px 18px;padding:11px 16px;font-size:.95rem;background:var(--blue);color:#fff}
+#chat .m.b{border-radius:18px 18px 18px 4px;padding:14px 16px;background:var(--card);border:1px solid var(--line);max-width:92%}
+#chat .chip[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+
+@media (min-width:768px){
+  #chat.screen{max-width:720px}
+  body.chat.ctab .inp{max-width:720px}
+}

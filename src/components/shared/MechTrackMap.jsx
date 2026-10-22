@@ -89,7 +89,15 @@ export default function MechTrackMap({ kind = 'course' }) {
   const activeStationBridge =
     projectBridge?.stations?.[activeStationIdx] ||
     projectBridge?.stations?.[0] ||
-    null;
+    (kind === 'project'
+      ? {
+          stationTitle: d.s[activeStationIdx] || 'Build Station',
+          lessonLabel: 'Mechatronics 1.3: Design Process',
+          courseKey: 'mechatronics',
+          lessonStepIndex: 2,
+          buildTip: 'Follow hands-on milestone instructions and verify hardware checkpoints before marking this station complete.'
+        }
+      : null);
   const courseBridge =
     kind === 'course'
       ? COURSE_TO_PROJECT_MAP[key] || COURSE_TO_PROJECT_MAP.mechatronics

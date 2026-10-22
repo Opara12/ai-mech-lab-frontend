@@ -3,6 +3,7 @@
 // No API keys or secrets are stored in frontend code.
 
 import { TOPIC_CHECKPOINTS, COURSE_TO_PROJECT_MAP } from '../data/interactiveClassroomData';
+import { getOrGenerateProjectBlueprint, PROJECT_BLUEPRINTS } from '../data/projectBlueprints';
 
 export const THINKING_FLOWS = {
   gen: ['Analyzing request', 'Accessing files', 'Loading memory', 'Loading courses', 'Arranging MechTracks'],
@@ -150,13 +151,121 @@ export function planMechBotResponse(
     );
   }
 
+  // Explicit Learn Mode or Build Mode selection
+  const modeMatch = l.match(/(?:select(?:ed)?\s+)?(learn|build)\s+mode(?:\s*[:\-]?\s*(?:for|how to build|to build|build)?\s*(.+))?/i);
+  if (modeMatch) {
+    const chosenMode = modeMatch[1].toLowerCase();
+    const projectQuery = modeMatch[2] || activeContext?.pendingProjectId || 'drone';
+    const bp = getOrGenerateProjectBlueprint(projectQuery);
+
+    if (chosenMode === 'learn') {
+      let createdKey = null;
+      return {
+        f: [
+          'Analyzing project requirements',
+          'Mapping course prerequisites',
+          'Listing essential components and tools',
+          'Arranging Course MechTrack'
+        ],
+        a: `🎓 ${bp.learnMode.title}\n\nHere are the core engineering concepts, components, and tools you'll need:\n\n📚 Core Concepts to Master:\n${bp.learnMode.concepts.map((c) => `• ${c}`).join('\n')}\n\n🧰 Required Components & Tools:\n${bp.learnMode.components.map((c) => `• ${c}`).join('\n')}\n\nI arranged a step-by-step Course MechTrack with ${bp.learnMode.stops.length} lessons from your course materials.`,
+        list: bp.learnMode.stops,
+        on: () => {
+          createdKey = createTrack('course', bp.learnMode.trackTitle, bp.learnMode.stops);
+        },
+        l: ['Start Course MechTrack', '#course', () => {
+          if (createdKey) selectCourse('course', createdKey);
+        }],
+        blueprint: bp,
+        selectedMode: 'learn'
+      };
+    } else {
+      let createdKey = null;
+      return {
+        f: [
+          'Initializing project blueprint',
+          'Structuring assembly stages',
+          'Configuring verification checkpoints',
+          'Setting up Project MechTrack'
+        ],
+        a: `🛠️ ${bp.buildMode.title}\n\nHere is your actionable hands-on build pathway with verification checkpoints:\n\n${bp.buildMode.stages.map((st) => `Stage ${st.stepIndex + 1}: ${st.stageTitle}\n✓ Checkpoint: ${st.checkpoint}`).join('\n\n')}\n\nYour project MechTrack is ready with milestone checkpoints and XP rewards.`,
+        list: bp.buildMode.stops,
+        on: () => {
+          createdKey = createTrack('project', bp.buildMode.trackTitle, bp.buildMode.stops);
+        },
+        l: ['Open Project MechTrack', '#project', () => {
+          if (createdKey) selectCourse('project', createdKey);
+        }],
+        blueprint: bp,
+        selectedMode: 'build'
+      };
+    }
+  }
+
+  // Project build goal detection (e.g. "how to build a drone", "I want to build a drone", "build a robot")
+  const isBuildRequest = /(?:how to build|want to build|build\s+(?:a|an\s+|me\s+)?|make\s+(?:a|an\s+)?|create\s+(?:a|an\s+)?|help me build)\s+([a-z0-9\- ]+)/i.test(l);
+  if (isBuildRequest) {
+    const bp = getOrGenerateProjectBlueprint(t);
+    const knowsPrereqs = /already know|prereq|studied|experienced|skip (the )?basics/i.test(l);
+    const cards = knowsPrereqs
+      ? [
+          {
+            id: `build-${bp.id}`,
+            mode: 'build',
+            projectId: bp.id,
+            icon: '🛠️',
+            title: bp.buildMode.title,
+            subtitle: bp.buildMode.subtitle,
+            badge: 'Recommended'
+          },
+          {
+            id: `learn-${bp.id}`,
+            mode: 'learn',
+            projectId: bp.id,
+            icon: '🎓',
+            title: bp.learnMode.title,
+            subtitle: `${bp.learnMode.subtitle} (Optional Review)`
+          }
+        ]
+      : [
+          {
+            id: `learn-${bp.id}`,
+            mode: 'learn',
+            projectId: bp.id,
+            icon: '🎓',
+            title: bp.learnMode.title,
+            subtitle: bp.learnMode.subtitle
+          },
+          {
+            id: `build-${bp.id}`,
+            mode: 'build',
+            projectId: bp.id,
+            icon: '🛠️',
+            title: bp.buildMode.title,
+            subtitle: bp.buildMode.subtitle
+          }
+        ];
+
+    return {
+      f: [
+        'Analyzing request',
+        'Checking required hardware',
+        'Mapping course prerequisites',
+        'Arranging Learn & Build modes'
+      ],
+      a: knowsPrereqs
+        ? 'Got it! Since you already know the prerequisites, you can jump straight into Build Mode, or review concepts in Learn Mode:\nChoose your mode:'
+        : 'Got it! I can set this up two ways.\nChoose your mode:',
+      blueprint: bp,
+      cards
+    };
+  }
+
   if (/suggest.*project|project idea|new build/.test(l)) {
-    return gen(
-      'project',
-      'Robotic Arm',
-      PROJECT_TEMPLATES[0][2],
-      'You have built a line follower and an obstacle robot, so a Robotic Arm is a good next build.'
-    );
+    return {
+      f: THINKING_FLOWS.genp,
+      a: 'I can help you build an Obstacle-Avoiding Robot (with ultrasonic distance sensors) or a Quadcopter Drone. Type "how to build a drone" or "how to build an obstacle robot" to see both Learn & Build modes!',
+      l: ['Open projects list', '#projects']
+    };
   }
 
   if (/want to (learn|study)|teach me|start learning|learn about|enrol|enroll|help me learn/.test(l)) {
@@ -177,27 +286,6 @@ export function planMechBotResponse(
     };
   }
 
-  if (/want to build|build (a|an|me)|make (a|an)|create (a|an)/.test(l)) {
-    if (/obstacle/.test(l)) {
-      return ex('project', 'obstacle', 'You already have the Obstacle-Avoiding Robot in progress, at 40%.', THINKING_FLOWS.genp);
-    }
-    if (/line.?follow/.test(l)) {
-      return ex('project', 'linecar', 'You already finished the Line-Following Car. Want a harder build?', THINKING_FLOWS.genp);
-    }
-    if (/temperature|alarm/.test(l)) {
-      return ex('project', 'temp', 'The Temperature Alarm is ready to start. It has 5 steps.', THINKING_FLOWS.genp);
-    }
-    for (let i = 0; i < PROJECT_TEMPLATES.length; i++) {
-      if (PROJECT_TEMPLATES[i][0].test(l)) {
-        return gen('project', PROJECT_TEMPLATES[i][1], PROJECT_TEMPLATES[i][2], 'Nice build idea.');
-      }
-    }
-    let nm = t.replace(/^.*?(build|make|create)( me)?( a| an)?\s*/i, '').replace(/[.?!]+$/, '').trim() || 'Custom Build';
-    nm = nm.replace(/\b\w/g, (c) => c.toUpperCase()).slice(0, 40);
-    const G = ['Plan and parts', 'Build the base', 'Wire the electronics', 'Write the code', 'Test and tune', 'Demo day', 'Show it off'];
-    return gen('project', nm, G.slice(0, 4 + (nm.length % 4)), 'Nice build idea.');
-  }
-
   if (/quiz|test me|exam/.test(l)) {
     return { f: THINKING_FLOWS.quiz, a: 'Your daily quiz is ready: 5 questions and +50 XP.', l: ['Start daily quiz', '#quiz'] };
   }
@@ -205,7 +293,11 @@ export function planMechBotResponse(
     return { f: THINKING_FLOWS.game, a: 'Try Sensor Rush to warm up. Your best score is 2,100.', l: ['Open games', '#games'] };
   }
   if (/\blab\b|experiment|train a model/.test(l)) {
-    return { f: THINKING_FLOWS.lab, a: 'The AI Lab has a line sensor demo, a hand-sign model and an object detector.', l: ['Open the AI Lab', '#lab'] };
+    return {
+      f: THINKING_FLOWS.lab,
+      a: 'The AI Lab features two interactive learning areas: the AI Concept Explorer and the Mechatronics Concept Explorer across 22 interactive topic benches.',
+      l: ['Open the AI Lab', '#lab']
+    };
   }
   if (/drone/.test(l)) {
     return cq('drone', 'Custom Drone Build has 6 stops, from Core Electronics to Propulsion Systems. You are on Propulsion Systems, in Motor Calibration at 45%.');
@@ -255,7 +347,10 @@ export function planMechBotResponse(
   if (/physics|newton|gravity|force|energy/.test(l)) {
     return { f: THINKING_FLOWS.web, a: 'Newton second law says force equals mass times acceleration (F = ma). A heavier object needs more force to speed up. Want me to connect this to how robot motors work?' };
   }
-  return { f: THINKING_FLOWS.web, a: 'That is outside Mech Lab, but I looked it up for you. Ask me to go deeper, or I can connect it to something you are learning.' };
+  return {
+    f: THINKING_FLOWS.web,
+    a: "I'm currently focused on the AI and Mechatronics courses and project builds. Ask me how to build a project (like a drone, robot, or AI chatbot), or ask any question about circuits, sensors, and machine learning!"
+  };
 }
 
 export async function executeSandboxCode(code = '') {
